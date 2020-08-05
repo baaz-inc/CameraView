@@ -292,6 +292,7 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
 
         // Apply gestures
         mapGesture(Gesture.TAP, gestures.getTapAction());
+        mapGesture(Gesture.DOUBLE_TAP, GestureAction.NONE);
         mapGesture(Gesture.LONG_TAP, gestures.getLongTapAction());
         mapGesture(Gesture.PINCH, gestures.getPinchAction());
         mapGesture(Gesture.SCROLL_HORIZONTAL, gestures.getHorizontalScrollAction());
@@ -593,11 +594,11 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
                     mPinchGestureFinder.setActive(mGestureMap.get(Gesture.PINCH) != none);
                     break;
                 case TAP:
-                // case DOUBLE_TAP:
+                case DOUBLE_TAP:
                 case LONG_TAP:
                     mTapGestureFinder.setActive(
                             mGestureMap.get(Gesture.TAP) != none ||
-                            // mGestureMap.get(Gesture.DOUBLE_TAP) != none ||
+                            mGestureMap.get(Gesture.DOUBLE_TAP) != none ||
                             mGestureMap.get(Gesture.LONG_TAP) != none);
                     break;
                 case SCROLL_HORIZONTAL:
@@ -664,12 +665,21 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
     // (1) if it was mapped to some action (we check here)
     // (2) if it's supported by the camera (CameraEngine checks)
     private void onGesture(@NonNull GestureFinder source, @NonNull CameraOptions options) {
-        Gesture gesture = source.getGesture();
+        final Gesture gesture = source.getGesture();
         GestureAction action = mGestureMap.get(gesture);
         PointF[] points = source.getPoints();
         float oldValue, newValue;
         //noinspection ConstantConditions
         switch (action) {
+            case CUSTOM:
+                mUiHandler.post(new Runnable() {
+                    @Override public void run() {
+                        for (CameraListener listener : mListeners) {
+                            listener.onGestureCustomAction(gesture);
+                        }
+                    }
+                });
+                break;
 
             case TAKE_PICTURE:
                 takePicture();
@@ -2219,6 +2229,13 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
             } else if (previewSize.equals(mLastPreviewStreamSize)) {
                 LOG.i("onCameraPreviewStreamSizeChanged:",
                         "swallowing because the preview size has not changed.", previewSize);
+                mUiHandler.post(new Runnable() {
+                    @Override public void run() {
+                        for (CameraListener listener : mListeners) {
+                            listener.onCameraPreviewReady();
+                        }
+                    }
+                });
             } else {
                 LOG.i("onCameraPreviewStreamSizeChanged: posting a requestLayout call.",
                         "Preview stream size:", previewSize);
@@ -2226,6 +2243,9 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
                     @Override
                     public void run() {
                         requestLayout();
+                        for (CameraListener listener : mListeners) {
+                            listener.onCameraPreviewReady();
+                        }
                     }
                 });
             }
