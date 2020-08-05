@@ -671,6 +671,9 @@ public abstract class CameraEngine implements
     public abstract void setMode(@NonNull Mode mode);
     @NonNull public abstract Mode getMode();
 
+    public abstract void setDrawToPreview(boolean drawToPreview);
+    public abstract boolean isDrawToPreview();
+
     public abstract void setZoom(float zoom, @Nullable PointF[] points, boolean notify);
     public abstract float getZoomValue();
 

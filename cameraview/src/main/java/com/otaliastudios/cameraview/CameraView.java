@@ -1454,6 +1454,14 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
         return mCameraEngine.getMode();
     }
 
+    public void setDrawToPreview(boolean drawToPreview) {
+        mCameraEngine.setDrawToPreview(drawToPreview);
+    }
+
+    public boolean isDrawToPreview() {
+        return mCameraEngine.isDrawToPreview();
+    }
+
     /**
      * Sets a capture size selector for picture mode.
      * The {@link SizeSelector} will be invoked with the list of available sizes, and the first

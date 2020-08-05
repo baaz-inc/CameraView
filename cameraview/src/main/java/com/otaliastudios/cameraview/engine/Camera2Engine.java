@@ -206,7 +206,9 @@ public class Camera2Engine extends CameraBaseEngine implements
      * if needed (like a video recording surface).
      */
     private void addRepeatingRequestBuilderSurfaces(@NonNull Surface... extraSurfaces) {
-        mRepeatingRequestBuilder.addTarget(mPreviewStreamSurface);
+        if (mPreviewStreamSurface != null) {
+            mRepeatingRequestBuilder.addTarget(mPreviewStreamSurface);
+        }
         if (mFrameProcessingSurface != null) {
             mRepeatingRequestBuilder.addTarget(mFrameProcessingSurface);
         }
@@ -222,7 +224,9 @@ public class Camera2Engine extends CameraBaseEngine implements
      * Removes default surfaces from the repeating request builder.
      */
     private void removeRepeatingRequestBuilderSurfaces() {
-        mRepeatingRequestBuilder.removeTarget(mPreviewStreamSurface);
+        if (mPreviewStreamSurface != null) {
+            mRepeatingRequestBuilder.removeTarget(mPreviewStreamSurface);
+        }
         if (mFrameProcessingSurface != null) {
             mRepeatingRequestBuilder.removeTarget(mFrameProcessingSurface);
         }
@@ -484,33 +488,35 @@ public class Camera2Engine extends CameraBaseEngine implements
 
         // 1. PREVIEW
         // Create a preview surface with the correct size.
-        final Class outputClass = mPreview.getOutputClass();
-        final Object output = mPreview.getOutput();
-        if (outputClass == SurfaceHolder.class) {
-            try {
-                // This must be called from the UI thread...
-                Tasks.await(Tasks.call(new Callable<Void>() {
-                    @Override
-                    public Void call() {
-                        ((SurfaceHolder) output).setFixedSize(
-                                mPreviewStreamSize.getWidth(),
-                                mPreviewStreamSize.getHeight());
-                        return null;
-                    }
-                }));
-            } catch (ExecutionException | InterruptedException e) {
-                throw new CameraException(e, CameraException.REASON_FAILED_TO_CONNECT);
+        if (isDrawToPreview()) {
+            final Class outputClass = mPreview.getOutputClass();
+            final Object output = mPreview.getOutput();
+            if (outputClass == SurfaceHolder.class) {
+                try {
+                    // This must be called from the UI thread...
+                    Tasks.await(Tasks.call(new Callable<Void>() {
+                        @Override
+                        public Void call() {
+                            ((SurfaceHolder) output).setFixedSize(
+                                    mPreviewStreamSize.getWidth(),
+                                    mPreviewStreamSize.getHeight());
+                            return null;
+                        }
+                    }));
+                } catch (ExecutionException | InterruptedException e) {
+                    throw new CameraException(e, CameraException.REASON_FAILED_TO_CONNECT);
+                }
+                mPreviewStreamSurface = ((SurfaceHolder) output).getSurface();
+            } else if (outputClass == SurfaceTexture.class) {
+                ((SurfaceTexture) output).setDefaultBufferSize(
+                        mPreviewStreamSize.getWidth(),
+                        mPreviewStreamSize.getHeight());
+                mPreviewStreamSurface = new Surface((SurfaceTexture) output);
+            } else {
+                throw new RuntimeException("Unknown CameraPreview output class.");
             }
-            mPreviewStreamSurface = ((SurfaceHolder) output).getSurface();
-        } else if (outputClass == SurfaceTexture.class) {
-            ((SurfaceTexture) output).setDefaultBufferSize(
-                    mPreviewStreamSize.getWidth(),
-                    mPreviewStreamSize.getHeight());
-            mPreviewStreamSurface = new Surface((SurfaceTexture) output);
-        } else {
-            throw new RuntimeException("Unknown CameraPreview output class.");
+            outputSurfaces.add(mPreviewStreamSurface);
         }
-        outputSurfaces.add(mPreviewStreamSurface);
 
         // 2. VIDEO RECORDING
         if (getMode() == Mode.VIDEO) {

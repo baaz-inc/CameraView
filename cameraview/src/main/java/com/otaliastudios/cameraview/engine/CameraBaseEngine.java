@@ -81,6 +81,7 @@ public abstract class CameraBaseEngine extends CameraEngine {
     private SizeSelector mVideoSizeSelector;
     private Facing mFacing;
     private Mode mMode;
+    private boolean mDrawToPreview = true;
     private Audio mAudio;
     private long mVideoMaxSize;
     private int mVideoMaxDuration;
@@ -413,6 +414,16 @@ public abstract class CameraBaseEngine extends CameraEngine {
     @Override
     public final Mode getMode() {
         return mMode;
+    }
+
+    @Override
+    public void setDrawToPreview(boolean drawToPreview) {
+        mDrawToPreview = drawToPreview;
+    }
+
+    @Override
+    public boolean isDrawToPreview() {
+        return mDrawToPreview;
     }
 
     @Override
