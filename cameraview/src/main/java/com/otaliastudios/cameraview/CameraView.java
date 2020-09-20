@@ -2398,30 +2398,44 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
 
         @Override
         public void dispatchFrame(@NonNull final Frame frame) {
-            // The getTime() below might crash if developers incorrectly release
-            // frames asynchronously.
             LOG.v("dispatchFrame:", frame.getTime(), "processors:", mFrameProcessors.size());
-            if (mFrameProcessors.isEmpty()) {
-                // Mark as released. This instance will be reused.
-                frame.release();
-            } else {
-                // Dispatch this frame to frame processors.
-                mFrameProcessingExecutor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        LOG.v("dispatchFrame: executing. Passing", frame.getTime(),
-                                "to processors.");
-                        for (FrameProcessor processor : mFrameProcessors) {
-                            try {
-                                processor.process(frame);
-                            } catch (Exception e) {
-                                LOG.w("Frame processor crashed:", e);
-                            }
-                        }
-                        frame.release();
+            if (!mFrameProcessors.isEmpty()) {
+                LOG.v("dispatchFrame: executing. Passing", frame.getTime(),
+                        "to processors.");
+                for (FrameProcessor processor : mFrameProcessors) {
+                    try {
+                        processor.process(frame);
+                    } catch (Exception e) {
+                        LOG.w("Frame processor crashed:", e);
                     }
-                });
+                }
             }
+            frame.release();
+
+//            // The getTime() below might crash if developers incorrectly release
+//            // frames asynchronously.
+//            LOG.v("dispatchFrame:", frame.getTime(), "processors:", mFrameProcessors.size());
+//            if (mFrameProcessors.isEmpty()) {
+//                // Mark as released. This instance will be reused.
+//                frame.release();
+//            } else {
+//                // Dispatch this frame to frame processors.
+//                mFrameProcessingExecutor.execute(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        LOG.v("dispatchFrame: executing. Passing", frame.getTime(),
+//                                "to processors.");
+//                        for (FrameProcessor processor : mFrameProcessors) {
+//                            try {
+//                                processor.process(frame);
+//                            } catch (Exception e) {
+//                                LOG.w("Frame processor crashed:", e);
+//                            }
+//                        }
+//                        frame.release();
+//                    }
+//                });
+//            }
         }
 
         @Override
