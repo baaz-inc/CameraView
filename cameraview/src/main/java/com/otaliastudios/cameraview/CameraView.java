@@ -13,6 +13,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.location.Location;
+import android.media.ImageReader;
 import android.media.MediaActionSound;
 import android.os.Build;
 import android.os.Handler;
@@ -2395,6 +2396,20 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
                 }
             });
         }
+
+        @Override
+        public void dispatchImage(@NonNull ImageReader reader, int viewRotation) {
+            if (!mFrameProcessors.isEmpty()) {
+                for (FrameProcessor processor : mFrameProcessors) {
+                    try {
+                        processor.process(reader, viewRotation);
+                    } catch (Exception e) {
+                        LOG.w("Frame processor crashed:", e);
+                    }
+                }
+            }
+        }
+
 
         @Override
         public void dispatchFrame(@NonNull final Frame frame) {

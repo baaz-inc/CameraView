@@ -20,4 +20,14 @@ dependencies {
     implementation(project(":cameraview"))
     implementation("androidx.appcompat:appcompat:1.2.0")
     implementation("com.google.android.material:material:1.2.0")
+
+
+    implementation( "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.0")
+    implementation ("androidx.appcompat:appcompat:1.1.0")
+
+    // Banuba SDK dependencies
+    implementation(fileTree("../libs/banuba_effect_player-release.aar"))
+    implementation(fileTree("../libs/banuba_sdk-release.aar"))
+    implementation (files("libs/banuba_effect_player-release.aar"))
+    implementation (files("libs/banuba_sdk-release.aar"))
 }

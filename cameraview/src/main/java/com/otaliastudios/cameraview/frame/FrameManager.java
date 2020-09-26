@@ -146,6 +146,11 @@ public abstract class FrameManager<T> {
         }
     }
 
+    public int getViewRotation(){
+       return mAngles.offset(Reference.SENSOR, Reference.VIEW,
+               Axis.RELATIVE_TO_SENSOR);
+    }
+
     /**
      * Called by child frames when they are released.
      * @param frame the released frame

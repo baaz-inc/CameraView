@@ -1,5 +1,6 @@
 package com.otaliastudios.cameraview.frame;
 
+import android.media.ImageReader;
 import com.otaliastudios.cameraview.CameraView;
 
 import androidx.annotation.NonNull;
@@ -23,4 +24,7 @@ public interface FrameProcessor {
      */
     @WorkerThread
     void process(@NonNull Frame frame);
+
+    @WorkerThread
+    void process(@NonNull ImageReader reader, int viewRotation);
 }

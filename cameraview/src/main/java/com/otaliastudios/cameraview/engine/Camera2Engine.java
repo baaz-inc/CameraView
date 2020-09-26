@@ -1452,27 +1452,28 @@ public class Camera2Engine extends CameraBaseEngine implements
     @Override
     public void onImageAvailable(ImageReader reader) {
         LOG.v("onImageAvailable:", "trying to acquire Image.");
-        Image image = null;
-        try {
-            image = reader.acquireLatestImage();
-        } catch (Exception ignore) { }
-        if (image == null) {
-            LOG.w("onImageAvailable:", "failed to acquire Image!");
-        } else if (getState() == CameraState.PREVIEW && !isChangingState()) {
-            // After preview, the frame manager is correctly set up
-            //noinspection unchecked
-            Frame frame = getFrameManager().getFrame(image,
-                    System.currentTimeMillis());
-            if (frame != null) {
-                LOG.v("onImageAvailable:", "Image acquired, dispatching.");
-                getCallback().dispatchFrame(frame);
-            } else {
-                LOG.i("onImageAvailable:", "Image acquired, but no free frames. DROPPING.");
-            }
-        } else {
-            LOG.i("onImageAvailable:", "Image acquired in wrong state. Closing it now.");
-            image.close();
-        }
+        getCallback().dispatchImage(reader, getFrameManager().getViewRotation());
+//        Image image = null;
+//        try {
+//            image = reader.acquireLatestImage();
+//        } catch (Exception ignore) { }
+//        if (image == null) {
+//            LOG.w("onImageAvailable:", "failed to acquire Image!");
+//        } else if (getState() == CameraState.PREVIEW && !isChangingState()) {
+//            // After preview, the frame manager is correctly set up
+//            //noinspection unchecked
+//            Frame frame = getFrameManager().getFrame(image,
+//                    System.currentTimeMillis());
+//            if (frame != null) {
+//                LOG.v("onImageAvailable:", "Image acquired, dispatching.");
+//                getCallback().dispatchFrame(frame);
+//            } else {
+//                LOG.i("onImageAvailable:", "Image acquired, but no free frames. DROPPING.");
+//            }
+//        } else {
+//            LOG.i("onImageAvailable:", "Image acquired in wrong state. Closing it now.");
+//            image.close();
+//        }
     }
 
     @Override

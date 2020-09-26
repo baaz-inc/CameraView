@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.PointF;
 import android.location.Location;
 
-
+import android.media.ImageReader;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -125,6 +125,7 @@ public abstract class CameraEngine implements
         void dispatchOnExposureCorrectionChanged(float newValue, @NonNull float[] bounds,
                                                  @Nullable PointF[] fingers);
         void dispatchFrame(@NonNull Frame frame);
+        void dispatchImage(@NonNull ImageReader reader, int viewRotation);
         void dispatchError(CameraException exception);
         void dispatchOnVideoRecordingStart();
         void dispatchOnVideoRecordingEnd();
