@@ -24,7 +24,4 @@ public interface FrameProcessor {
      */
     @WorkerThread
     void process(@NonNull Frame frame);
-
-    @WorkerThread
-    void process(@NonNull ImageReader reader, int viewRotation);
 }

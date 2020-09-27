@@ -125,7 +125,6 @@ public abstract class CameraEngine implements
         void dispatchOnExposureCorrectionChanged(float newValue, @NonNull float[] bounds,
                                                  @Nullable PointF[] fingers);
         void dispatchFrame(@NonNull Frame frame);
-        void dispatchImage(@NonNull ImageReader reader, int viewRotation);
         void dispatchError(CameraException exception);
         void dispatchOnVideoRecordingStart();
         void dispatchOnVideoRecordingEnd();

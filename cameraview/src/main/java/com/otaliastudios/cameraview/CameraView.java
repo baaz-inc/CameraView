@@ -2397,19 +2397,6 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
             });
         }
 
-        @Override
-        public void dispatchImage(@NonNull ImageReader reader, int viewRotation) {
-            if (!mFrameProcessors.isEmpty()) {
-                for (FrameProcessor processor : mFrameProcessors) {
-                    try {
-                        processor.process(reader, viewRotation);
-                    } catch (Exception e) {
-                        LOG.w("Frame processor crashed:", e);
-                    }
-                }
-            }
-        }
-
 
         @Override
         public void dispatchFrame(@NonNull final Frame frame) {
