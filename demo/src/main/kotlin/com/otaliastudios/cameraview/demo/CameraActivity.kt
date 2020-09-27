@@ -46,34 +46,34 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, OptionView.Cal
         camera.setLifecycleOwner(this)
         camera.addCameraListener(Listener())
         if (USE_FRAME_PROCESSOR) {
-//            camera.addFrameProcessor(object : FrameProcessor {
-//                private var lastTime = System.currentTimeMillis()
-//                override fun process(frame: Frame) {
-//                    val newTime = frame.time
-//                    val delay = newTime - lastTime
-//                    lastTime = newTime
-//                    LOG.v("Frame delayMillis:", delay, "FPS:", 1000 / delay)
-//                    if (DECODE_BITMAP) {
-//                        if (frame.format == ImageFormat.NV21
-//                                && frame.dataClass == ByteArray::class.java) {
-//                            val data = frame.getData<ByteArray>()
-//                            val yuvImage = YuvImage(data,
-//                                    frame.format,
-//                                    frame.size.width,
-//                                    frame.size.height,
-//                                    null)
-//                            val jpegStream = ByteArrayOutputStream()
-//                            yuvImage.compressToJpeg(Rect(0, 0,
-//                                    frame.size.width,
-//                                    frame.size.height), 100, jpegStream)
-//                            val jpegByteArray = jpegStream.toByteArray()
-//                            val bitmap = BitmapFactory.decodeByteArray(jpegByteArray,
-//                                    0, jpegByteArray.size)
-//                            bitmap.toString()
-//                        }
-//                    }
-//                }
-//            })
+            camera.addFrameProcessor(object : FrameProcessor {
+                private var lastTime = System.currentTimeMillis()
+                override fun process(frame: Frame) {
+                    val newTime = frame.time
+                    val delay = newTime - lastTime
+                    lastTime = newTime
+                    LOG.v("Frame delayMillis:", delay, "FPS:", 1000 / delay)
+                    if (DECODE_BITMAP) {
+                        if (frame.format == ImageFormat.NV21
+                                && frame.dataClass == ByteArray::class.java) {
+                            val data = frame.getData<ByteArray>()
+                            val yuvImage = YuvImage(data,
+                                    frame.format,
+                                    frame.size.width,
+                                    frame.size.height,
+                                    null)
+                            val jpegStream = ByteArrayOutputStream()
+                            yuvImage.compressToJpeg(Rect(0, 0,
+                                    frame.size.width,
+                                    frame.size.height), 100, jpegStream)
+                            val jpegByteArray = jpegStream.toByteArray()
+                            val bitmap = BitmapFactory.decodeByteArray(jpegByteArray,
+                                    0, jpegByteArray.size)
+                            bitmap.toString()
+                        }
+                    }
+                }
+            })
         }
         findViewById<View>(R.id.edit).setOnClickListener(this)
         findViewById<View>(R.id.capturePicture).setOnClickListener(this)
