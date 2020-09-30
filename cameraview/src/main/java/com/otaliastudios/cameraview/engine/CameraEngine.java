@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.PointF;
 import android.location.Location;
 
-
+import android.media.ImageReader;
 import android.os.Handler;
 import android.os.Looper;
 

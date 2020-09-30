@@ -58,7 +58,7 @@ import com.otaliastudios.cameraview.engine.options.Camera2Options;
 import com.otaliastudios.cameraview.engine.orchestrator.CameraState;
 import com.otaliastudios.cameraview.frame.Frame;
 import com.otaliastudios.cameraview.frame.FrameManager;
-import com.otaliastudios.cameraview.frame.ImageFrameManager;
+import com.otaliastudios.cameraview.frame.ImageReaderFrameManager;
 import com.otaliastudios.cameraview.gesture.Gesture;
 import com.otaliastudios.cameraview.internal.CropHelper;
 import com.otaliastudios.cameraview.metering.MeteringRegions;
@@ -1445,23 +1445,17 @@ public class Camera2Engine extends CameraBaseEngine implements
     @NonNull
     @Override
     protected FrameManager instantiateFrameManager(int poolSize) {
-        return new ImageFrameManager(poolSize);
+        return new ImageReaderFrameManager(poolSize);
     }
 
     @EngineThread
     @Override
     public void onImageAvailable(ImageReader reader) {
         LOG.v("onImageAvailable:", "trying to acquire Image.");
-        Image image = null;
-        try {
-            image = reader.acquireLatestImage();
-        } catch (Exception ignore) { }
-        if (image == null) {
-            LOG.w("onImageAvailable:", "failed to acquire Image!");
-        } else if (getState() == CameraState.PREVIEW && !isChangingState()) {
+        if (getState() == CameraState.PREVIEW && !isChangingState()) {
             // After preview, the frame manager is correctly set up
             //noinspection unchecked
-            Frame frame = getFrameManager().getFrame(image,
+            Frame frame = getFrameManager().getFrame(reader,
                     System.currentTimeMillis());
             if (frame != null) {
                 LOG.v("onImageAvailable:", "Image acquired, dispatching.");
@@ -1470,8 +1464,11 @@ public class Camera2Engine extends CameraBaseEngine implements
                 LOG.i("onImageAvailable:", "Image acquired, but no free frames. DROPPING.");
             }
         } else {
-            LOG.i("onImageAvailable:", "Image acquired in wrong state. Closing it now.");
-            image.close();
+            try {
+                Image image = reader.acquireLatestImage();
+                image.close();
+            } catch (Exception ignore) {
+            }
         }
     }
 
