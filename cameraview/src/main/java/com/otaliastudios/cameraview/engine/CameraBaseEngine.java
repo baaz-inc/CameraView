@@ -84,6 +84,7 @@ public abstract class CameraBaseEngine extends CameraEngine {
     private SizeSelector mVideoSizeSelector;
     private Facing mFacing;
     private Mode mMode;
+    private boolean mDrawToPreview = true;
     private Audio mAudio;
     private long mVideoMaxSize;
     private int mVideoMaxDuration;
@@ -416,6 +417,16 @@ public abstract class CameraBaseEngine extends CameraEngine {
     @Override
     public final Mode getMode() {
         return mMode;
+    }
+
+    @Override
+    public void setDrawToPreview(boolean drawToPreview) {
+        mDrawToPreview = drawToPreview;
+    }
+
+    @Override
+    public boolean isDrawToPreview() {
+        return mDrawToPreview;
     }
 
     @Override
@@ -937,44 +948,7 @@ public abstract class CameraBaseEngine extends CameraEngine {
     @NonNull
     @SuppressWarnings("WeakerAccess")
     protected final Size computeFrameProcessingSize() {
-        @NonNull List<Size> frameSizes = getFrameProcessingAvailableSizes();
-        // These sizes come in REF_SENSOR. Since there is an external selector involved,
-        // we must convert all of them to REF_VIEW, then flip back when returning.
-        boolean flip = getAngles().flip(Reference.SENSOR, Reference.VIEW);
-        List<Size> sizes = new ArrayList<>(frameSizes.size());
-        for (Size size : frameSizes) {
-            sizes.add(flip ? size.flip() : size);
-        }
-        AspectRatio targetRatio = AspectRatio.of(
-                mPreviewStreamSize.getWidth(),
-                mPreviewStreamSize.getHeight());
-        if (flip) targetRatio = targetRatio.flip();
-        int maxWidth = mFrameProcessingMaxWidth;
-        int maxHeight = mFrameProcessingMaxHeight;
-        if (maxWidth <= 0 || maxWidth == Integer.MAX_VALUE) maxWidth = 640;
-        if (maxHeight <= 0 || maxHeight == Integer.MAX_VALUE) maxHeight = 640;
-        Size targetMaxSize = new Size(maxWidth, maxHeight);
-        LOG.i("computeFrameProcessingSize:",
-                "targetRatio:", targetRatio,
-                "targetMaxSize:", targetMaxSize);
-        SizeSelector matchRatio = SizeSelectors.aspectRatio(targetRatio, 0);
-        SizeSelector matchSize = SizeSelectors.and(
-                SizeSelectors.maxHeight(targetMaxSize.getHeight()),
-                SizeSelectors.maxWidth(targetMaxSize.getWidth()),
-                SizeSelectors.biggest());
-        SizeSelector matchAll = SizeSelectors.or(
-                SizeSelectors.and(matchRatio, matchSize), // Try to respect both constraints.
-                matchSize, // If couldn't match aspect ratio, at least respect the size
-                SizeSelectors.smallest() // If couldn't match any, take the smallest.
-        );
-        Size result = matchAll.select(sizes).get(0);
-        if (!sizes.contains(result)) {
-            throw new RuntimeException("SizeSelectors must not return Sizes other than " +
-                    "those in the input list.");
-        }
-        if (flip) result = result.flip();
-        LOG.i("computeFrameProcessingSize:", "result:", result, "flip:", flip);
-        return result;
+        return computePreviewStreamSize();
     }
 
     //endregion

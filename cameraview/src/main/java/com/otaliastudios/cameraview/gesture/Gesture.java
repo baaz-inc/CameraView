@@ -40,6 +40,16 @@ public enum Gesture {
     TAP(GestureType.ONE_SHOT),
 
     /**
+     * Double tap gesture, typically assigned to the custom action.
+     * This gesture can be mapped to one shot actions:
+     *
+     * - {@link GestureAction#AUTO_FOCUS}
+     * - {@link GestureAction#TAKE_PICTURE}
+     * - {@link GestureAction#NONE}
+     */
+    DOUBLE_TAP(GestureType.ONE_SHOT),
+
+    /**
      * Long tap gesture.
      * This gesture can be mapped to one shot actions:
      *

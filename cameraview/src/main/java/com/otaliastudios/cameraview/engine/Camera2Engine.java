@@ -58,7 +58,7 @@ import com.otaliastudios.cameraview.engine.options.Camera2Options;
 import com.otaliastudios.cameraview.engine.orchestrator.CameraState;
 import com.otaliastudios.cameraview.frame.Frame;
 import com.otaliastudios.cameraview.frame.FrameManager;
-import com.otaliastudios.cameraview.frame.ImageFrameManager;
+import com.otaliastudios.cameraview.frame.ImageReaderFrameManager;
 import com.otaliastudios.cameraview.gesture.Gesture;
 import com.otaliastudios.cameraview.internal.CropHelper;
 import com.otaliastudios.cameraview.metering.MeteringRegions;
@@ -206,7 +206,9 @@ public class Camera2Engine extends CameraBaseEngine implements
      * if needed (like a video recording surface).
      */
     private void addRepeatingRequestBuilderSurfaces(@NonNull Surface... extraSurfaces) {
-        mRepeatingRequestBuilder.addTarget(mPreviewStreamSurface);
+        if (mPreviewStreamSurface != null) {
+            mRepeatingRequestBuilder.addTarget(mPreviewStreamSurface);
+        }
         if (mFrameProcessingSurface != null) {
             mRepeatingRequestBuilder.addTarget(mFrameProcessingSurface);
         }
@@ -222,7 +224,9 @@ public class Camera2Engine extends CameraBaseEngine implements
      * Removes default surfaces from the repeating request builder.
      */
     private void removeRepeatingRequestBuilderSurfaces() {
-        mRepeatingRequestBuilder.removeTarget(mPreviewStreamSurface);
+        if (mPreviewStreamSurface != null) {
+            mRepeatingRequestBuilder.removeTarget(mPreviewStreamSurface);
+        }
         if (mFrameProcessingSurface != null) {
             mRepeatingRequestBuilder.removeTarget(mFrameProcessingSurface);
         }
@@ -484,33 +488,35 @@ public class Camera2Engine extends CameraBaseEngine implements
 
         // 1. PREVIEW
         // Create a preview surface with the correct size.
-        final Class outputClass = mPreview.getOutputClass();
-        final Object output = mPreview.getOutput();
-        if (outputClass == SurfaceHolder.class) {
-            try {
-                // This must be called from the UI thread...
-                Tasks.await(Tasks.call(new Callable<Void>() {
-                    @Override
-                    public Void call() {
-                        ((SurfaceHolder) output).setFixedSize(
-                                mPreviewStreamSize.getWidth(),
-                                mPreviewStreamSize.getHeight());
-                        return null;
-                    }
-                }));
-            } catch (ExecutionException | InterruptedException e) {
-                throw new CameraException(e, CameraException.REASON_FAILED_TO_CONNECT);
+        if (isDrawToPreview()) {
+            final Class outputClass = mPreview.getOutputClass();
+            final Object output = mPreview.getOutput();
+            if (outputClass == SurfaceHolder.class) {
+                try {
+                    // This must be called from the UI thread...
+                    Tasks.await(Tasks.call(new Callable<Void>() {
+                        @Override
+                        public Void call() {
+                            ((SurfaceHolder) output).setFixedSize(
+                                    mPreviewStreamSize.getWidth(),
+                                    mPreviewStreamSize.getHeight());
+                            return null;
+                        }
+                    }));
+                } catch (ExecutionException | InterruptedException e) {
+                    throw new CameraException(e, CameraException.REASON_FAILED_TO_CONNECT);
+                }
+                mPreviewStreamSurface = ((SurfaceHolder) output).getSurface();
+            } else if (outputClass == SurfaceTexture.class) {
+                ((SurfaceTexture) output).setDefaultBufferSize(
+                        mPreviewStreamSize.getWidth(),
+                        mPreviewStreamSize.getHeight());
+                mPreviewStreamSurface = new Surface((SurfaceTexture) output);
+            } else {
+                throw new RuntimeException("Unknown CameraPreview output class.");
             }
-            mPreviewStreamSurface = ((SurfaceHolder) output).getSurface();
-        } else if (outputClass == SurfaceTexture.class) {
-            ((SurfaceTexture) output).setDefaultBufferSize(
-                    mPreviewStreamSize.getWidth(),
-                    mPreviewStreamSize.getHeight());
-            mPreviewStreamSurface = new Surface((SurfaceTexture) output);
-        } else {
-            throw new RuntimeException("Unknown CameraPreview output class.");
+            outputSurfaces.add(mPreviewStreamSurface);
         }
-        outputSurfaces.add(mPreviewStreamSurface);
 
         // 2. VIDEO RECORDING
         if (getMode() == Mode.VIDEO) {
@@ -1437,23 +1443,17 @@ public class Camera2Engine extends CameraBaseEngine implements
     @NonNull
     @Override
     protected FrameManager instantiateFrameManager(int poolSize) {
-        return new ImageFrameManager(poolSize);
+        return new ImageReaderFrameManager(poolSize);
     }
 
     @EngineThread
     @Override
     public void onImageAvailable(ImageReader reader) {
         LOG.v("onImageAvailable:", "trying to acquire Image.");
-        Image image = null;
-        try {
-            image = reader.acquireLatestImage();
-        } catch (Exception ignore) { }
-        if (image == null) {
-            LOG.w("onImageAvailable:", "failed to acquire Image!");
-        } else if (getState() == CameraState.PREVIEW && !isChangingState()) {
+        if (getState() == CameraState.PREVIEW && !isChangingState()) {
             // After preview, the frame manager is correctly set up
             //noinspection unchecked
-            Frame frame = getFrameManager().getFrame(image,
+            Frame frame = getFrameManager().getFrame(reader,
                     System.currentTimeMillis());
             if (frame != null) {
                 LOG.v("onImageAvailable:", "Image acquired, dispatching.");
@@ -1462,8 +1462,11 @@ public class Camera2Engine extends CameraBaseEngine implements
                 LOG.i("onImageAvailable:", "Image acquired, but no free frames. DROPPING.");
             }
         } else {
-            LOG.i("onImageAvailable:", "Image acquired in wrong state. Closing it now.");
-            image.close();
+            try {
+                Image image = reader.acquireLatestImage();
+                image.close();
+            } catch (Exception ignore) {
+            }
         }
     }
 

@@ -4,6 +4,8 @@ import android.graphics.PointF;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
+import com.otaliastudios.cameraview.gesture.Gesture;
+import com.otaliastudios.cameraview.gesture.GestureAction;
 
 /**
  * The base class for receiving updates from a {@link CameraView} instance.
@@ -12,6 +14,12 @@ import androidx.annotation.UiThread;
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public abstract class CameraListener {
+
+    /**
+     * This will be called when the {@link GestureAction#CUSTOM} triggered with <b>gesture</b> type causing this action
+     * @param gesture the {@link Gesture} caused this action
+     */
+    public void onGestureCustomAction(@NonNull Gesture gesture) {}
 
 
     /**
@@ -22,6 +30,12 @@ public abstract class CameraListener {
      */
     @UiThread
     public void onCameraOpened(@NonNull CameraOptions options) { }
+
+    /**
+     * Notifies that the camera preview was changed and ready.
+     */
+    @UiThread
+    public void onCameraPreviewReady() { }
 
 
     /**

@@ -35,6 +35,17 @@ public enum GestureAction {
     AUTO_FOCUS(1, GestureType.ONE_SHOT),
 
     /**
+     * Custom Action could be handled by listening to action, typically assigned to the double tap gesture.
+     * This action can be mapped to one shot gestures:
+     *
+     * - {@link Gesture#TAP}
+     * - {@link Gesture#LONG_TAP}
+     *
+     * To control marker drawing, please see {@link CameraView#setAutoFocusMarker(AutoFocusMarker)}
+     */
+    CUSTOM(1, GestureType.ONE_SHOT),
+
+    /**
      * When triggered, this action will fire a picture shoot.
      * This action can be mapped to one shot gestures:
      *

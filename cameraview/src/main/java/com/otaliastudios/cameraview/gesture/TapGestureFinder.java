@@ -26,13 +26,11 @@ public class TapGestureFinder extends GestureFinder {
                 return true;
             }
 
-            /*
-            TODO should use onSingleTapConfirmed and enable this.
             public boolean onDoubleTap(MotionEvent e) {
                 mNotify = true;
-                mType = Gesture.DOUBLE_TAP;
+                setGesture(Gesture.DOUBLE_TAP);
                 return true;
-            } */
+            }
 
             @Override
             public void onLongPress(MotionEvent e) {
