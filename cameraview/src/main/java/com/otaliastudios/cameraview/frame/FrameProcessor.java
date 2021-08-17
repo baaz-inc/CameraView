@@ -1,5 +1,6 @@
 package com.otaliastudios.cameraview.frame;
 
+import android.media.ImageReader;
 import com.otaliastudios.cameraview.CameraView;
 
 import androidx.annotation.NonNull;
