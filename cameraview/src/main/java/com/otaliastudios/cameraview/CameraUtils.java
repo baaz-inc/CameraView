@@ -94,6 +94,7 @@ public class CameraUtils {
             stream.flush();
             return file;
         } catch (IOException e) {
+            LOG.e("writeToFile:", "could not write file.", e);
             return null;
         }
     }
@@ -157,7 +158,7 @@ public class CameraUtils {
                                     @NonNull final BitmapCallback callback) {
         decodeBitmap(source, Integer.MAX_VALUE, Integer.MAX_VALUE, callback);
     }
-    
+
     /**
      * Decodes an input byte array and outputs a Bitmap that is ready to be displayed.
      * The difference with {@link android.graphics.BitmapFactory#decodeByteArray(byte[], int, int)}

@@ -134,6 +134,7 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
     private Engine mEngine;
     private Filter mPendingFilter;
     private int mFrameProcessingExecutors;
+    private int mActiveGestures;
 
     // Components
     private Handler mUiHandler;
@@ -227,6 +228,8 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
         int frameExecutors = a.getInteger(R.styleable.CameraView_cameraFrameProcessingExecutors,
                 DEFAULT_FRAME_PROCESSING_EXECUTORS);
 
+        boolean drawHardwareOverlays = a.getBoolean(R.styleable.CameraView_cameraDrawHardwareOverlays, false);
+
         // Size selectors and gestures
         SizeSelectorParser sizeSelectors = new SizeSelectorParser(a);
         GestureParser gestures = new GestureParser(a);
@@ -260,6 +263,7 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
         setUseDeviceOrientation(useDeviceOrientation);
         setGrid(controls.getGrid());
         setGridColor(gridColor);
+        setDrawHardwareOverlays(drawHardwareOverlays);
 
         // Apply camera engine params
         // Adding new ones? See setEngine().
@@ -607,6 +611,12 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
                             mGestureMap.get(Gesture.SCROLL_VERTICAL) != none);
                     break;
             }
+
+            mActiveGestures = 0;
+            for(GestureAction act : mGestureMap.values()) {
+                mActiveGestures += act == GestureAction.NONE ? 0 : 1;
+            }
+
             return true;
         }
         mapGesture(gesture, none);
@@ -635,7 +645,8 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        return true; // Steal our own events.
+        // Steal our own events if gestures are enabled
+        return mActiveGestures > 0;
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -678,6 +689,10 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
                         }
                     }
                 });
+                break;
+
+            case TAKE_PICTURE_SNAPSHOT:
+                takePictureSnapshot();
                 break;
 
             case TAKE_PICTURE:
@@ -2163,6 +2178,25 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
         return mCameraEngine.isTakingPicture();
     }
 
+    /**
+     * Sets the overlay layout hardware canvas capture mode to allow hardware
+     * accelerated views to be captured in snapshots
+     *
+     * @param on true if enabled
+     */
+    public void setDrawHardwareOverlays(boolean on) {
+        mOverlayLayout.setHardwareCanvasEnabled(on);
+    }
+
+    /**
+     * Returns true if the overlay layout is set to capture the hardware canvas
+     * of child views
+     *
+     * @return boolean indicating hardware canvas capture is enabled
+     */
+    public boolean getDrawHardwareOverlays() {
+        return mOverlayLayout.getHardwareCanvasEnabled();
+    }
     //endregion
 
     //region Callbacks and dispatching
@@ -2253,10 +2287,18 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
         }
 
         @Override
-        public void onShutter(boolean shouldPlaySound) {
+        public void dispatchOnPictureShutter(boolean shouldPlaySound) {
             if (shouldPlaySound && mPlaySounds) {
                 playSound(MediaActionSound.SHUTTER_CLICK);
             }
+            mUiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    for (CameraListener listener : mListeners) {
+                        listener.onPictureShutter();
+                    }
+                }
+            });
         }
 
         @Override

@@ -175,4 +175,13 @@ public abstract class CameraListener {
 
     }
 
+    /**
+     * Notifies that the picture capture has started. Can be used to update the UI for visual
+     * confirmation or sound effects.
+     */
+    @UiThread
+    public void onPictureShutter() {
+
+    }
+    
 }
