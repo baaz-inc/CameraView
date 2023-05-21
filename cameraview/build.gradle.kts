@@ -1,6 +1,6 @@
+import io.deepmedia.tools.publisher.common.GithubScm
 import io.deepmedia.tools.publisher.common.License
 import io.deepmedia.tools.publisher.common.Release
-import io.deepmedia.tools.publisher.common.GithubScm
 
 plugins {
     id("com.android.library")
@@ -10,35 +10,33 @@ plugins {
 }
 
 android {
-    setCompileSdkVersion(property("compileSdkVersion") as Int)
+    compileSdk = property("compileSdkVersion") as Int
     defaultConfig {
-        setMinSdkVersion(property("minSdkVersion") as Int)
-        setTargetSdkVersion(property("targetSdkVersion") as Int)
-        versionCode = 1
-        versionName = "2.7.1"
+        minSdk = property("minSdkVersion") as Int
+        targetSdk = property("targetSdkVersion") as Int
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunnerArgument("filter", "" +
-                "com.otaliastudios.cameraview.tools.SdkExcludeFilter," +
-                "com.otaliastudios.cameraview.tools.SdkIncludeFilter")
+        testInstrumentationRunnerArguments["filter"] = "" +
+            "com.otaliastudios.cameraview.tools.SdkExcludeFilter," +
+            "com.otaliastudios.cameraview.tools.SdkIncludeFilter"
     }
     buildTypes["debug"].isTestCoverageEnabled = true
     buildTypes["release"].isMinifyEnabled = false
 }
 
 dependencies {
-    testImplementation("junit:junit:4.13")
-    testImplementation("org.mockito:mockito-inline:2.28.2")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.mockito:mockito-inline:5.2.0")
 
-    androidTestImplementation("androidx.test:runner:1.4.0")
-    androidTestImplementation("androidx.test:rules:1.4.0")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("org.mockito:mockito-android:2.28.2")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.test:rules:1.5.0")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("org.mockito:mockito-android:5.3.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
-    api("androidx.exifinterface:exifinterface:1.3.2")
-    api("androidx.lifecycle:lifecycle-common:2.3.1")
-    api("com.google.android.gms:play-services-tasks:17.2.1")
-    implementation("androidx.annotation:annotation:1.2.0")
+    api("androidx.exifinterface:exifinterface:1.3.6")
+    api("androidx.lifecycle:lifecycle-common:2.6.1")
+    api("com.google.android.gms:play-services-tasks:18.0.2")
+    implementation("androidx.annotation:annotation:1.6.0")
     implementation("com.otaliastudios.opengl:egloo:0.6.1")
 }
 
@@ -46,8 +44,8 @@ dependencies {
 
 publisher {
     project.description = "A well documented, high-level Android interface that makes capturing " +
-            "pictures and videos easy, addressing all of the common issues and needs. " +
-            "Real-time filters, gestures, watermarks, frame processing, RAW, output of any size."
+        "pictures and videos easy, addressing all of the common issues and needs. " +
+        "Real-time filters, gestures, watermarks, frame processing, RAW, output of any size."
     project.artifact = "cameraview"
     project.group = "com.otaliastudios"
     project.url = "https://github.com/natario1/CameraView"
@@ -56,6 +54,7 @@ publisher {
     project.addDeveloper("natario1", "mat.iavarone@gmail.com")
     release.sources = Release.SOURCES_AUTO
     release.docs = Release.DOCS_AUTO
+    release.version = "2.7.2"
 
     directory()
 
@@ -116,19 +115,19 @@ tasks.register("computeCoverage", JacocoReport::class) {
     classDirectories.from(fileTree("$buildDir/intermediates/javac/debug") {
         // Not everything here is relevant for CameraView, but let's keep it generic
         exclude(
-                "**/R.class",
-                "**/R$*.class",
-                "**/BuildConfig.*",
-                "**/Manifest*.*",
-                "android/**",
-                "androidx/**",
-                "com/google/**",
-                "**/*\$ViewInjector*.*",
-                "**/Dagger*Component.class",
-                "**/Dagger*Component\$Builder.class",
-                "**/*Module_*Factory.class",
-                // We don"t test OpenGL filters.
-                "**/com/otaliastudios/cameraview/filters/**.*"
+            "**/R.class",
+            "**/R$*.class",
+            "**/BuildConfig.*",
+            "**/Manifest*.*",
+            "android/**",
+            "androidx/**",
+            "com/google/**",
+            "**/*\$ViewInjector*.*",
+            "**/Dagger*Component.class",
+            "**/Dagger*Component\$Builder.class",
+            "**/*Module_*Factory.class",
+            // We don"t test OpenGL filters.
+            "**/com/otaliastudios/cameraview/filters/**.*"
         )
     })
     reports.html.isEnabled = true
