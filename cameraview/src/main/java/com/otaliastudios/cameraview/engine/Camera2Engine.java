@@ -486,7 +486,7 @@ public class Camera2Engine extends CameraBaseEngine implements
 
         // Compute sizes.
         // TODO preview stream should never be bigger than 1920x1080 as per
-        //  CameraDevice.createCaptureSession. This should be probably be applied
+        //  CameraDevice.createCaptureSession. This should probably be applied
         //  before all the other external selectors, to treat it as a hard limit.
         //  OR: pass an int into these functions to be able to take smaller dims
         //  when session configuration fails
@@ -1449,15 +1449,8 @@ public class Camera2Engine extends CameraBaseEngine implements
         int min = Math.round(mCameraOptions.getPreviewFrameRateMinValue());
         int max = Math.round(mCameraOptions.getPreviewFrameRateMaxValue());
         for (Range<Integer> fpsRange : fpsRanges) {
-            if (!fpsRange.contains(min)) {
-                continue;
-            }
-            if (!fpsRange.contains(max)) {
-                continue;
-            }
-            if (!FpsRangeValidator.validate(fpsRange)) {
-                continue;
-            }
+            if (!fpsRange.contains(min) && !fpsRange.contains(max)) continue;
+            if (!FpsRangeValidator.validate(fpsRange)) continue;
             results.add(fpsRange);
         }
         return results;
