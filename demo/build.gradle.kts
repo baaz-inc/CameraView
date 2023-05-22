@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    setCompileSdkVersion(property("compileSdkVersion") as Int)
+    compileSdk = property("compileSdkVersion") as Int
     defaultConfig {
         applicationId = "com.otaliastudios.cameraview.demo"
         minSdk = (property("minSdkVersion") as Int)

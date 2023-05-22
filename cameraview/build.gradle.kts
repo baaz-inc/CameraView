@@ -16,8 +16,8 @@ android {
         targetSdk = property("targetSdkVersion") as Int
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunnerArguments["filter"] = "" +
-            "com.otaliastudios.cameraview.tools.SdkExcludeFilter," +
-            "com.otaliastudios.cameraview.tools.SdkIncludeFilter"
+                "com.otaliastudios.cameraview.tools.SdkExcludeFilter," +
+                "com.otaliastudios.cameraview.tools.SdkIncludeFilter"
     }
     buildTypes["debug"].isTestCoverageEnabled = true
     buildTypes["release"].isMinifyEnabled = false
@@ -86,7 +86,7 @@ tasks.register("runUnitTests") { // changing name? change github workflow
     dependsOn("testDebugUnitTest")
     doLast {
         copy {
-            from("$buildDir/jacoco/testDebugUnitTest.exec")
+            from("$buildDir/outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
             into("$coverageInputDir/unit_tests") // changing? change github workflow
         }
     }
@@ -130,8 +130,8 @@ tasks.register("computeCoverage", JacocoReport::class) {
             "**/com/otaliastudios/cameraview/filters/**.*"
         )
     })
-    reports.html.isEnabled = true
-    reports.xml.isEnabled = true
-    reports.html.destination = file("$coverageOutputDir/html")
-    reports.xml.destination = file("$coverageOutputDir/xml/report.xml")
+    reports.html.required.set(true)
+    reports.xml.required.set(true)
+    reports.html.outputLocation.set(file("$coverageOutputDir/html"))
+    reports.xml.outputLocation.set(file("$coverageOutputDir/xml/report.xml"))
 }
